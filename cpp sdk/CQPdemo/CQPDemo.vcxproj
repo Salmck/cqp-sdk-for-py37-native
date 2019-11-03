@@ -45,9 +45,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <ReferencePath>C:\Python37-32\include;$(ReferencePath)</ReferencePath>
-    <LibraryPath>C:\Python37-32\libs;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Python37-32\libs;C:\Python37-32\include;$(IncludePath)</IncludePath>
+    <ReferencePath>$(ReferencePath);$(ProjectDir)./include</ReferencePath>
+    <LibraryPath>$(LibraryPath);$(ProjectDir)./libs</LibraryPath>
+    <IncludePath>$(IncludePath);$(ProjectDir)./libs;$(ProjectDir)./include</IncludePath>
     <LibraryWPath>./app/com.cqp.plugins.py375/python/Scripts;./app/com.cqp.plugins.py375/python;./app/com.cqp.plugins.py375;./;$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
