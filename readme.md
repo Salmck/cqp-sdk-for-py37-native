@@ -1,11 +1,10 @@
-# 酷Q SDK
+# 酷Q SDK for Python
 
 ![AppVeyor](https://img.shields.io/appveyor/ci/crud-boy/cqp-sdk-for-py37-native)
 [![GitHub license](https://img.shields.io/github/license/crud-boy/cqp-sdk-for-py37-native)](https://github.com/crud-boy/cqp-sdk-for-py37-native/blob/master/LICENSE)
 
 # 插件说明
 [Github项目链接](https://github.com/crud-boy/cqp-sdk-for-py37-native) 
-    更新日期: 2019-11-01 
 
     插件基于CPP CQP v9+, 部分补丁为易语言代码翻译
 
