@@ -1,12 +1,6 @@
-
-
 # 酷Q SDK
 
-[![Build Status](https://travis-ci.org/crud-boy/cqp-sdk-for-py37-native.svg?branch=master)](https://travis-ci.org/crud-boy/cqp-sdk-for-py37-native)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/crud-boy/cqp-sdk-for-py37-native)
-[![GitHub issues](https://img.shields.io/github/issues/crud-boy/cqp-sdk-for-py37-native)](https://github.com/crud-boy/cqp-sdk-for-py37-native/issues)
-[![GitHub forks](https://img.shields.io/github/forks/crud-boy/cqp-sdk-for-py37-native)](https://github.com/crud-boy/cqp-sdk-for-py37-native/network)
-[![GitHub stars](https://img.shields.io/github/stars/crud-boy/cqp-sdk-for-py37-native)](https://github.com/crud-boy/cqp-sdk-for-py37-native/stargazers)
+![AppVeyor](https://img.shields.io/appveyor/ci/crud-boy/cqp-sdk-for-py37-native)
 [![GitHub license](https://img.shields.io/github/license/crud-boy/cqp-sdk-for-py37-native)](https://github.com/crud-boy/cqp-sdk-for-py37-native/blob/master/LICENSE)
 
 # 插件说明
