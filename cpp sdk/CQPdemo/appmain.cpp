@@ -63,12 +63,12 @@ void generatePluginAppid(HMODULE dllModule) {
 void initPython() {
 	std::unique_lock<std::mutex> initLock(initMutex);
 
-	if (isInitPlugin)
+	if (isInitPlugin || Py_IsInitialized())
 	{
 		return;
 	}
-	isInitPlugin = true;
-
+	
+	
 	// 初始化
 	Py_Initialize();
 
@@ -78,7 +78,6 @@ void initPython() {
 	}
 	PyEval_InitThreads();
 
-	
 	_PY_GIL_START(true);
 
 	Py_ssize_t tempSize;
@@ -218,6 +217,16 @@ void initPython() {
 	PyModule_AddFunctions(pluginModule, pluginMethods);
 	// 导入main
 	cqpPluginModule = PyImport_ImportModule("cqpplugin");
+
+	isInitPlugin = true;
+
+	_PY_GIL_DECREF(exceptInfo, PyErr_Occurred());
+
+	if (exceptInfo > 0)
+	{
+		isInitPlugin = false;
+		MessageBox(NULL, L"加载python插件失败(代码异常)", NULL, MB_OK);
+	}
 	// 释放GIL
 	_PY_GIL_STOP();
 
@@ -228,11 +237,8 @@ void finalizePython() {
 	std::unique_lock<std::mutex> initLock(initMutex);
 
 	// bug不进行卸载
-	if (isInitPlugin)
-	{
-		Py_Finalize();
-		isInitPlugin = false;
-	}
+	Py_Finalize();
+	isInitPlugin = false;
 }
 
 

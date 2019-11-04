@@ -45,7 +45,7 @@
 
     menuClick(index)   对应10个菜单序号1-10, 不用改json里面的函数名,可以改菜单名(sdk c++里面固定了菜单个数)
     Initialize         不能调用sdk发送消息, 可能会出错
-    eventStartup       可以调用sdk发送消息, 可以创建线程, 但是要先判断CQP.AC != -1, 不然可能会出错
+    eventStartup       可以调用sdk, 但是要先判断CQP.AC != -1, 不然可能会出错
 
 
 # 压力测试(无GIL死锁,不崩溃)
@@ -55,10 +55,9 @@
 # 多线程支持
     已测试:
         支持:
-            from concurrent.futures.thread import ThreadPoolExecutor
-            from threading import Thread
-        不支持:
-            apscheduler
+            concurrent.futures.thread.ThreadPoolExecutor
+            threading.Thread
+            apscheduler.schedulers.background.BackgroundScheduler
 
 
 # 未实现功能
@@ -67,10 +66,9 @@
 
 
 # 重要说明
-    1. 插件启动出错或者未响应, 可能是代码有错误
-    2. 不要在入口写多线程, 不然会假死或者重复执行多次  
-    3. 多线程必须在酷Q回调事件写, 建议在eventStartup写  
-    4. 不要用酷Q的重载应用，会导致多线程不关闭  
-    5. 建议在eventEnable中开启多线程，eventDisable和eventExit停止多线程  
-    6. eventExit事件最好写try, 一定要关闭多线程，不然酷Q无法正常退出  
-    7. 所有事件回调最好写try, 保证正确返回值
+    1. 不要在入口写多线程, 不然会假死或者重复执行多次  
+    2. 多线程必须在酷Q回调事件写, 建议在eventStartup写  
+    3. 不要用酷Q的重载应用，可能会导致多线程不关闭
+    4. 建议在eventEnable中开启多线程，eventDisable和eventExit停止多线程  
+    5. eventExit事件最好写try, 一定要关闭多线程，不然酷Q无法正常退出  
+    6. 所有事件回调最好写try, 保证正确返回值

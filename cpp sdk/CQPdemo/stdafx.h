@@ -42,7 +42,10 @@ public:
 	};
 
 	PyObject* AddDecRef(PyObject* item) {
-		pyRefVarArray.push_back(item);
+		if (item > 0)
+		{
+			pyRefVarArray.push_back(item);
+		}
 		return item;
 	}
 
@@ -56,7 +59,7 @@ private:
 
 
 #define _PY_GIL_START(_requireGIL) bool requireGIL = _requireGIL; PyGILState_STATE gil;  if(requireGIL) {  gil = PyGILState_Ensure(); } PyEnv *_py_env = new PyEnv();
-#define _PY_GIL_STOP()  delete _py_env; if(requireGIL) {   if (PyGILState_Check() > 0) { PyGILState_Release(gil); }  if (PyGILState_Check() > 0) { PyEval_SaveThread(); } }
+#define _PY_GIL_STOP()  delete _py_env; if(requireGIL) {   PyGILState_Release(gil); if(PyGILState_Check() > 0) { PyEval_SaveThread(); }}
 
 #define _PY_GIL_DECREF(var, exp) PyObject* var = _py_env->AddDecRef(exp); 
 
