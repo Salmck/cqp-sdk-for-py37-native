@@ -8,12 +8,7 @@
 
 4. 把sdk/demo目录下的所有文件。复制到 "酷Q目录/app/com.cqp.plugins.py375/" 目录下
 
-5. 安装python3.7 for x86, 并执行以下操作
-     1.  执行pip install virtualenv
-     2.  cd "酷Q目录/app/com.cqp.plugins.py375/"
-     3.  virtualenv python
-     4.  进入虚拟环境,安装其他库
-
+5. 安装python3.7 for x86, 并把 python目录 复制到 "酷Q目录/app/com.cqp.plugins.py375/" 下，并重命名为python
 
 
 6. 修改代码, "酷Q目录/app/com.cqp.plugins.py375/cqpplugin.py"
