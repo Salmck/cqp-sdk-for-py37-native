@@ -58,13 +58,6 @@
             "name":"好友已添加事件处理",
             "function":"_eventFriend_Add",
             "priority":30000
-        },,
-        {
-            "id":11,
-            "type":11,
-            "name":"群上传文件",
-            "priority":30000,
-            "function":"_eventGroupUpload"
         },
         {
             "id":8,
@@ -79,6 +72,13 @@
             "name":"群添加请求处理",
             "function":"_eventRequest_AddGroup",
             "priority":30000
+        },
+        {
+            "id":11,
+            "type":11,
+            "name":"群上传文件",
+            "priority":30000,
+            "function":"_eventGroupUpload"
         },
         {
             "id":1001,
@@ -155,12 +155,13 @@
 
     ],
     "auth":[		// 应用权限（发布前请删除无用权限）
-        //20,  //[敏感]取Cookies	getCookies / getCsrfToken
-        //30,  //接收语音			getRecord
+        // 11,    // 群上传文件
+        20,  //[敏感]取Cookies	getCookies / getCsrfToken
+        30,  //接收语音			getRecord
         101,  //发送群消息			sendGroupMsg
         103,  //发送讨论组消息		sendDiscussMsg
         106,  //发送私聊消息		sendPrivateMsg
-        //110,  //[敏感]发送赞				sendLike
+        110,  //[敏感]发送赞				sendLike
         120,  //置群员移除			setGroupKick
         121,  //置群员禁言			setGroupBan
         122,  //置群管理员			setGroupAdmin
@@ -168,7 +169,7 @@
         124,  //置匿名群员禁言		setGroupAnonymousBan
         125,  //置群匿名设置		setGroupAnonymous
         126,  //置群成员名片		setGroupCard
-        //127,  //[敏感]置群退出	setGroupLeave
+        127,  //[敏感]置群退出	setGroupLeave
         128,  //置群成员专属头衔	setGroupSpecialTitle
         130,  //取群成员信息		getGroupMemberInfoV2 / getGroupMemberInfo
         131,  //取陌生人信息		getStrangerInfo
