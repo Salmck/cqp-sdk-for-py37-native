@@ -10,8 +10,9 @@
 
 5. 安装python3.7 for x86, 并把 python目录 复制到 "酷Q目录/app/com.cqp.plugins.py375/" 下，并重命名为python
 
+6. 运行 "酷Q目录/app/com.cqp.plugins.py375/python/python.exe", 判断python是否正常运行，如果提示错误，则代表系统有问题
 
-6. 修改代码, "酷Q目录/app/com.cqp.plugins.py375/cqpplugin.py"
+7. 修改代码, "酷Q目录/app/com.cqp.plugins.py375/cqpplugin.py"
 
-7. 启动酷Q, 安装完毕
+8. 启动酷Q, 安装完毕
 
