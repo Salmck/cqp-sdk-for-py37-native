@@ -1,18 +1,8 @@
 
-1. 通过git clone https://github.com/crud-boy/cqp-sdk-for-py37-native
+1. 运行 "酷Q目录/app/com.cqp.plugins.py375/python/python.exe", 判断python是否正常运行，如果提示错误，则代表系统有问题无法使用插件
 
-2. 把sdk/app.json 放到  "酷Q目录/dev/com.cqp.plugins.py375/app.json"
+2. 安装库直接pip安装（python3.7的pip），安装完把整个python(3.7) 覆盖到 "酷Q目录/app/com.cqp.plugins.py375/python"
 
-3. 下载下面这个链接中的com.cqp.plugins.py375.dll放到  "酷Q目录/dev/com.cqp.plugins.py375/app.dll"
-    https://github.com/crud-boy/cqp-sdk-for-py37-native/releases
+3. 修改代码, "酷Q目录/app/com.cqp.plugins.py375/cqpplugin.py"
 
-4. 把sdk/demo目录下的所有文件。复制到 "酷Q目录/app/com.cqp.plugins.py375/" 目录下
-
-5. 安装python3.7 for x86, 并把 python目录 复制到 "酷Q目录/app/com.cqp.plugins.py375/" 下，并重命名为python
-
-6. 运行 "酷Q目录/app/com.cqp.plugins.py375/python/python.exe", 判断python是否正常运行，如果提示错误，则代表系统有问题
-
-7. 修改代码, "酷Q目录/app/com.cqp.plugins.py375/cqpplugin.py"
-
-8. 启动酷Q, 安装完毕
-
+4. 启动酷Q, 安装完毕

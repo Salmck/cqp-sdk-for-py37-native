@@ -93,6 +93,7 @@ void initPython() {
 	sprintf_s(pluginsDirBuf, "%s%s", appDir.c_str(), string("\\app\\").append(CQAPPID).c_str());
 	string pluginDir = pluginsDirBuf;
 
+	
 	CHAR pyHomeDirBuf[MAX_PATH] = { 0 };
 	sprintf_s(pyHomeDirBuf, "%s%s", pluginDir.c_str(), "\\python");
 
@@ -104,14 +105,14 @@ void initPython() {
 	
 
 	// 设置环境
+	
 	CHAR pathBuf[4096] = { 0 };
 
-	sprintf_s(pathBuf, "%s%s%s%s%s%s%s%s%s%s",
+	sprintf_s(pathBuf, "%s%s%s%s%s%s%s%s",
 		pluginDir.c_str(), ";",
 		pluginDir.c_str(), "\\python\\DLLs;",
 		pluginDir.c_str(), "\\python\\Lib;",
-		pluginDir.c_str(), "\\python\\Lib\\site-packages;",
-		pluginDir.c_str(), "\\python\\Lib\\Tools;");
+		pluginDir.c_str(), "\\python\\Lib\\site-packages;");
 
 	
 	_PY_GIL_DECREF(temp_$3, PyBytes_FromString(pathBuf));
@@ -119,13 +120,17 @@ void initPython() {
 
 	wchar_t* pyPath = PyUnicode_AsWideCharString(temp_$4, &tempSize);
 	PySys_SetPath(pyPath);
-
+	
 	// 设置程序名
-	_PY_GIL_DECREF(temp_$5, PyBytes_FromString("__main__"));
+	CHAR pyBinPath[4096] = { 0 };
+	sprintf_s(pyBinPath, "%s%s", pyHomeDirBuf, "\\Scripts\\python.exe");
+	
+	_PY_GIL_DECREF(temp_$5, PyBytes_FromString(pyBinPath));
 	_PY_GIL_DECREF(temp_$6, PyCodec_Decode(temp_$5, "gbk", err));
 
 	wchar_t* pyProgramName = PyUnicode_AsWideCharString(temp_$6, &tempSize);
 	Py_SetProgramName(pyProgramName);
+	
 
 	_PY_GIL_DECREF(osModule, PyImport_ImportModule("os"));
 	_PY_GIL_DECREF(chdirFn, PyObject_GetAttrString(osModule, "chdir"));
