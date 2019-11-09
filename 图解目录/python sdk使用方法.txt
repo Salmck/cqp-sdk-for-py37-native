@@ -15,4 +15,8 @@
 1. 不允许加载其他python插件
 2. python版本一定要3.7.x
 3. 别傻傻逼逼下载个python3.8，跑来问我为什么插件加载失败
+4. 代码有错误
+5. 事件回调如果出错，会忽略，自己写try
 
+
+插件下载地址： https://github.com/crud-boy/cqp-sdk-for-py37-native
