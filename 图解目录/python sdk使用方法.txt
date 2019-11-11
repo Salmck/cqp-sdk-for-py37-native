@@ -15,8 +15,8 @@
 1. 不允许加载其他python插件
 2. python版本一定要3.7.x
 3. 别傻傻逼逼下载个python3.8，跑来问我为什么插件加载失败
-4. 代码有错误
+4. 提示有错误，一定是代码有错误，不然就是缺少环境
 5. 事件回调如果出错，会忽略，自己写try
-
+6. 插件安装方法，安装python3.7.x 32位版本，通过python3.7.x 32位版本的pip 安装其他库，然后把整个python37目录复制并替换插件的python目录
 
 插件下载地址： https://github.com/crud-boy/cqp-sdk-for-py37-native
