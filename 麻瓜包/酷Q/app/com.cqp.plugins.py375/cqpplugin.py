@@ -1,115 +1,80 @@
 
+import os
+import traceback
+
 import CQP
 from core.v9_plus import *
 
-import os
 
-from apscheduler.schedulers.background import BackgroundScheduler
+try:
+    import plugins
+except:
+    show_exception()
 
-sched = BackgroundScheduler()
+
+def dispatch(fn_name, *arg, **kwargs):
+    for module_name in dir(plugins):
+        module = getattr(plugins, module_name)
+        fn = getattr(module, fn_name, False)
+        if fn:
+            try:
+                if fn(*arg, **kwargs) == CQP.EVENT_BLOCK:
+                    return CQP.EVENT_BLOCK
+            except:
+                CQP.addLog(CQP.AC, CQP.CQLOG_FATAL, 'CQP PY插件(异常)', str(traceback.format_exc()))
+    return CQP.EVENT_IGNORE
 
 
-# 详细参数表：https://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html#apscheduler.triggers.cron.CronTrigger
+if os.environ.get('cqp-plugins', False):
+    pass
+else:
+    os.environ.get('cqp-plugins', True)
 
-# second=*/5    *代表每秒，*/5代表每5秒
-# minute=*/5    *代表每分钟，*/5代表每5分钟
-# 以此推类
 
-# 每天6点运行就是 sched.scheduled_job('cron', day="*", hour='6')
+    def Initialize(ac):
+        dispatch('Initialize', ac)
 
-import time
-@sched.scheduled_job('cron', second='*/5')
-def timer_task():
-    if CQP.enable and CQP.AC != -1:
-        CQP.sendPrivateMsg(CQP.AC, 190796068, str(time.time()))
+    def eventStartup():
+        dispatch('eventStartup')
 
-# 防止重复初始化
-if not os.environ.get('CQP_INIT', ''):
-    os.environ['CQP_INIT'] = 'True'
+    def eventExit():
+        dispatch('eventExit')
 
-    try:
-        def write_event_text(name, *args, **kwargs):
-            with open("./event.txt", 'ab') as f:
-                content = '{}--{}--{}\n'.format(name, str(args), str(kwargs)).encode()
-                f.write(content)
+    def eventEnable():
+        dispatch('eventEnable')
 
-        def Initialize(ac):
-            write_event_text('Initialize', ac=ac)
+    def eventDisable():
+        dispatch('eventDisable')
 
-        def eventStartup():
-            write_event_text('eventStartup')
-            sched.start()
+    def eventPrivateMsg(subType: int, msgId: int, fromQQ: int, msg: str, font: int) -> int:
+        return dispatch('eventPrivateMsg', subType, msgId, fromQQ, msg, font)
 
-        def eventExit():
-            write_event_text('eventExit')
-            sched.remove_all_jobs()
-            sched.remove_executor()
+    def eventGroupMsg(subType: int, msgId: int, fromGroup: int, fromQQ: int, fromAnonymous: str, msg: str, font: int) -> int:
+        return dispatch('eventGroupMsg', subType, msgId, fromGroup, fromQQ, fromAnonymous, msg, font)
 
-        def eventEnable():
-            write_event_text('eventEnable')
+    def eventDiscussMsg(subType: int, msgId: int, fromDiscuss: int, fromQQ: int, msg: str, font: int) -> int:
+        return dispatch('eventDiscussMsg', subType, msgId, fromDiscuss, fromQQ, msg, font)
 
-        def eventDisable():
-            write_event_text('eventDisable')
+    def eventSystem_GroupAdmin(subType: int, sendTime: int, fromGroup: int, beingOperateQQ: int) -> int:
+        return dispatch('eventSystem_GroupAdmin', subType, sendTime, fromGroup, beingOperateQQ)
 
-        def eventPrivateMsg(subType: int, msgId: int, fromQQ: int, msg: str, font: int) -> int:
-            write_event_text('eventPrivateMsg', subType=subType, msgId=msgId, fromQQ=fromQQ, msg=msg, font=font)
-            # CQP.sendPrivateMsg(CQP.AC, fromQQ, '我是一个无情的复读机:' + msg)
-            return CQP.EVENT_IGNORE
+    def eventSystem_GroupMemberDecrease(subType: int, sendTime: int, fromGroup: int, fromQQ: int, beingOperateQQ: int) -> int:
+        return dispatch('eventSystem_GroupMemberDecrease', subType, sendTime, fromGroup, fromQQ, beingOperateQQ)
 
-        def eventGroupMsg(subType: int, msgId: int, fromGroup: int, fromQQ: int, fromAnonymous: str, msg: str, font: int) -> int:
-            write_event_text('eventGroupMsg', subType=subType, msgId=msgId, fromGroup=fromGroup, fromQQ=fromQQ, fromAnonymous=fromAnonymous, msg=msg, font=font)
-            # CQP.sendPrivateMsg(CQP.AC, fromQQ, '我是一个无情的复读机:' + msg)
-            # get_group_anonymous_info(fromAnonymous)
-            
-            return CQP.EVENT_IGNORE
+    def eventSystem_GroupMemberIncrease(subType: int, sendTime: int, fromGroup: int, fromQQ: int, beingOperateQQ: int) -> int:
+        return dispatch('eventSystem_GroupMemberIncrease', subType, sendTime, fromGroup, fromQQ, beingOperateQQ)
 
-        def eventDiscussMsg(subType: int, msgId: int, fromDiscuss: int, fromQQ: int, msg: str, font: int) -> int:
-            write_event_text('eventDiscussMsg', subType=subType, msgId=msgId, fromDiscuss=fromDiscuss, fromQQ=fromQQ, msg=msg, font=font)
-            # CQP.sendDiscussMsg(CQP.AC, fromDiscuss, '讨论组消息:' + msg)
-            return CQP.EVENT_IGNORE
+    def eventFriend_Add(subType: int, sendTime: int, fromQQ: int) -> int:
+        return dispatch('eventFriend_Add', subType, sendTime, fromQQ)
 
-        def eventSystem_GroupAdmin(subType: int, sendTime: int, fromGroup: int, beingOperateQQ: int) -> int:
-            write_event_text('eventSystem_GroupAdmin', subType=subType, sendTime=sendTime, fromGroup=fromGroup, beingOperateQQ=beingOperateQQ)
-            return CQP.EVENT_IGNORE
+    def eventRequest_AddFriend(subType: int, sendTime: int, fromQQ: int, msg: int, responseFlag: str) -> int:
+        return dispatch('eventRequest_AddFriend', subType, sendTime, fromQQ, msg, responseFlag)
 
-        def eventSystem_GroupMemberDecrease(subType: int, sendTime: int, fromGroup: int, fromQQ: int, beingOperateQQ: int) -> int:
-            write_event_text('eventSystem_GroupMemberDecrease', subType=subType, sendTime=sendTime, fromGroup=fromGroup, fromQQ=fromQQ, beingOperateQ=beingOperateQ)
-            return CQP.EVENT_IGNORE
+    def eventRequest_AddGroup(subType: int, sendTime: int, fromGroup: int, fromQQ: int, msg: str, responseFlag: str) -> int:
+        return dispatch('eventRequest_AddGroup', subType, sendTime, fromGroup, fromQQ, msg, responseFlag)
 
-        def eventSystem_GroupMemberIncrease(subType: int, sendTime: int, fromGroup: int, fromQQ: int, beingOperateQQ: int) -> int:
-            write_event_text('eventSystem_GroupMemberIncrease', subType=subType, sendTime=sendTime, fromGroup=fromGroup, fromQQ=fromQQ, beingOperateQQ=beingOperateQQ)
-            return CQP.EVENT_IGNORE
+    def eventGroupUpload(subType: int, sendTime: int, fromGroup: int, fromQQ: int, file: str) -> int:
+        return dispatch('eventGroupUpload', subType, sendTime, fromGroup, fromQQ, file)
 
-        def eventFriend_Add(subType: int, sendTime: int, fromQQ: int) -> int:
-            write_event_text('eventFriend_Add', subType=subType, sendTime=sendTime, fromQQ=fromQQ)
-            return CQP.EVENT_IGNORE
-
-        def eventRequest_AddFriend(subType: int, sendTime: int, fromQQ: int, msg: int, responseFlag: str) -> int:
-            write_event_text('eventRequest_AddFriend', subType=subType, sendTime=sendTime, fromQQ=fromQQ, msg=msg, responseFlag=responseFlag)
-            # CQP.setFriendAddRequest(CQP.AC, responseFlag, CQP.REQUEST_ALLOW, "")
-            return CQP.EVENT_IGNORE
-
-        def eventRequest_AddGroup(subType: int, sendTime: int, fromGroup: int, fromQQ: int, msg: str, responseFlag: str) -> int:
-            write_event_text('eventRequest_AddGroup', subType=subType, sendTime=sendTime, fromGroup=fromGroup, fromQQ=fromQQ, msg=msg, responseFlag=responseFlag)
-            """
-            if subType == CQP.REQUEST_GROUPADD:
-                CQP.setGroupAddRequestV2(CQP.AC, responseFlag, subType, CQP.REQUEST_ALLOW, "新人加群")
-                return CQP.EVENT_BLOCK
-            elif subType == CQP.REQUEST_GROUPINVITE:
-                pass
-            else:
-                pass
-            CQP.setGroupAddRequestV2(CQP.AC, responseFlag, subType, CQP.REQUEST_DENY, "群加满了")
-            """
-            return CQP.EVENT_IGNORE
-
-        def eventGroupUpload(subType: int, sendTime: int, fromGroup: int, fromQQ: int, file: str) -> int:
-            write_event_text('eventGroupUpload', subType=subType, sendTime=sendTime, fromGroup=fromGroup, fromQQ=fromQQ, file=file)
-            # msgbox(get_group_upload_file(file))
-            return CQP.EVENT_IGNORE
-
-        def menuClick(index):
-            write_event_text('index', index=index)
-
-    except:
-        show_exception()
+    def menuClick(index):
+        return dispatch('menuClick', index)

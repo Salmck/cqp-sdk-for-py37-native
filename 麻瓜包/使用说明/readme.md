@@ -15,27 +15,7 @@
     注意: 
         1. 插件路径最多只能容纳260个ansii字符, 请不要把插件放到太深层的目录
         2. 进程内的插件只能运行一个，且不能有其他python37的插件，如果有其他同类型插件请自行整合
-```python
-# 代码整合例子
-import CQP
-import plugin1
-import plugin2
-
-all_plugins = [plugin1, plugin2]
-
-def eventStartup():
-    for plugin in all_plugins:
-        try:
-            result = plugin.eventStartup()
-
-            if result == CQP.EVENT_BLOCK:
-                # 事件拦截就补传递给下一个插件
-                return CQP.EVENT_BLOCK
-        except:
-            pass
-    return CQP.EVENT_IGNORE
-
-```
+        3. 请不要改写cqpplugin.py的代码，请复制template.py到plugins目录, 并改名为xxx.py, 然后在__init__.py 添加你的插件,方可生效
 
 # 安装说明
 

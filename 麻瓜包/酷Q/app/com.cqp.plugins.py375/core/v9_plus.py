@@ -160,7 +160,7 @@ def cq_emoji(emoji):
     ''' emoji的unicode编号 '''
     return '[CQ:emoji,id={}]'.format(emoji)
 
-def cq_at(QQID, space=False):
+def cq_at(QQID=-1, space=False):
     ''' 
     @某人(at)
         QQID: -1 为全体
