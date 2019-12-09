@@ -15,17 +15,20 @@ from apscheduler.schedulers.background import BackgroundScheduler
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', second='*/20')
+@sched.scheduled_job('cron', second='*/59')
 def timer_task():
-    if CQP.AC != -1:
+    if CQP.AC > -1:
         try:
             for item in CQP.getGroupList(CQP.AC):
-                if CQP.sendGroupMsg(CQP.AC, item['群号'], item['名称']) > 0:
-                    CQP.addLog(CQP.AC, CQP.CQLOG_INFOSEND, '定时任务机器人(发送成功)', '群号: {} 群名: {}'.format(item['群号'], item['名称']))
-                else:
-                    CQP.addLog(CQP.AC, CQP.CQLOG_FATAL, '定时任务机器人(发送失败)', '群号: {} 群名: {}'.format(item['群号'], item['名称']))
+                try:
+                    if CQP.sendGroupMsg(CQP.AC, item['群号'], item['名称']):
+                        CQP.addLog(CQP.AC, CQP.CQLOG_INFOSEND, '定时任务机器人(发送成功)', '群号: {} 群名: {}'.format(item['群号'], item['名称']))
+                    else:
+                        CQP.addLog(CQP.AC, CQP.CQLOG_ERROR, '定时任务机器人(发送失败)', '群号: {} 群名: {}'.format(item['群号'], item['名称']))
+                except:
+                    CQP.addLog(CQP.AC, CQP.CQLOG_ERROR, '定时任务机器人(异常了)', str(traceback.format_exc()))
         except:
-            CQP.addLog(CQP.AC, CQP.CQLOG_FATAL, '定时任务机器人(异常了)', str(traceback.format_exc()))
+            CQP.addLog(CQP.AC, CQP.CQLOG_ERROR, '定时任务机器人(异常了)', str(traceback.format_exc()))
 
 
 def Initialize(ac):
@@ -36,7 +39,6 @@ def eventStartup():
 
 def eventExit():
     sched.remove_all_jobs()
-    sched.remove_executor()
     sched.shutdown()
 
 def eventEnable():

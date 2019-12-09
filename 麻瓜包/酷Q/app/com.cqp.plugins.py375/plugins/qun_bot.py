@@ -19,7 +19,8 @@ def eventDisable():
     pass
 
 def eventPrivateMsg(subType: int, msgId: int, fromQQ: int, msg: str, font: int) -> int:
-    return CQP.EVENT_IGNORE
+    CQP.sendPrivateMsg(CQP.AC, fromQQ, msg)
+    return CQP.EVENT_BLOCK
 
 def eventGroupMsg(subType: int, msgId: int, fromGroup: int, fromQQ: int, fromAnonymous: str, msg: str, font: int) -> int:
     """

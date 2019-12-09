@@ -22,6 +22,11 @@
 > 首先要安装vc2019 x86运行库  
 [下载地址](https://www.cr173.com/soft/3106.html)  
 
+一定要安装python3.7.5 x86 到这个位置 C:\Python37-32, 否则加载失败
+
+我也不知道为什么,明明调用的是插件目录的python, 但是这个位置不安装python的话，就会加载失败
+
+
 
 # pip说明
     1. cd /d 酷Q目录\app\com.cqp.plugins.py375\python

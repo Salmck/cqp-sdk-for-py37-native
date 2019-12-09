@@ -152,6 +152,42 @@ CQDll = ctypes.WinDLL('CQP.dll')
 #表情_青蛙			"170"
 '''
 
+
+# 认证码
+CQP.AC = -1
+# 事件回调启用禁止
+CQP.enable = False
+# 事件_忽略
+CQP.EVENT_IGNORE = 0
+# 事件_拦截
+CQP.EVENT_BLOCK = 1
+# 请求_通过
+CQP.REQUEST_ALLOW = 1
+# 请求_拒绝
+CQP.REQUEST_DENY = 2
+# 请求_群添加
+CQP.REQUEST_GROUPADD = 1
+# 请求_群邀请
+CQP.REQUEST_GROUPINVITE = 2
+# 调试 灰色
+CQP.CQLOG_DEBUG = 0
+# 信息 黑色
+CQP.CQLOG_INFO = 10
+# 信息(成功) 紫色
+CQP.CQLOG_INFOSUCCESS = 11
+# 信息(接收) 蓝色
+CQP.CQLOG_INFORECV = 12
+# 信息(发送) 绿色
+CQP.CQLOG_INFOSEND = 13
+# 警告 橙色
+CQP.CQLOG_WARNING = 20
+# 错误 红色
+CQP.CQLOG_ERROR = 30
+
+# 提示框退出酷Q，致命错误 深红
+CQP.CQLOG_FATAL = 40
+
+
 def cq_face(faceId):
     ''' #表情_* 开头常量 '''
     return '[CQ:face,id={}]'.format(faceId)
@@ -234,26 +270,528 @@ def cq_record(recordPath):
     '''
     return '[CQ:record,file={}]'.format(escape(recordPath))
 
-def _CQ_getRecordV2(authCode: int, file: str, format: str) -> str:
-    authCode = ctypes.c_int(authCode)
-    file = ctypes.c_char_p(bytes(file, 'gbk'))
-    format = ctypes.c_char_p(bytes(format, 'gbk'))
-    result = CQDll.CQ_getRecordV2(authCode, file, format)
-    return ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+"""
+* 发送私聊消息, 成功返回消息ID
+* QQID 目标QQ号
+* msg 消息内容
+"""
+def _CQ_sendPrivateMsg(authCode: int, QQID: int, msg: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        QQID = ctypes.c_longlong(QQID)
+        msg = ctypes.c_char_p(bytes(msg, 'gbk'))
+        result = CQDll.CQ_sendPrivateMsg(authCode, QQID, msg)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.sendPrivateMsg = _CQ_sendPrivateMsg
 
+"""
+* 发送群消息, 成功返回消息ID
+* groupid 群号
+* msg 消息内容
+"""
+def _CQ_sendGroupMsg(authCode: int, groupid: int, msg: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        msg = ctypes.c_char_p(bytes(msg, 'gbk'))
+        CQDll.CQ_sendGroupMsg(authCode, groupid, msg)
+        return 1
+
+        result = 1
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.sendGroupMsg = _CQ_sendGroupMsg
+
+"""
+* 发送讨论组消息, 成功返回消息ID
+* discussid 讨论组号
+* msg 消息内容
+"""
+def _CQ_sendDiscussMsg(authCode: int, discussid: int, msg: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        discussid = ctypes.c_longlong(discussid)
+        msg = ctypes.c_char_p(bytes(msg, 'gbk'))
+        result = CQDll.CQ_sendDiscussMsg(authCode, discussid, msg)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.sendDiscussMsg = _CQ_sendDiscussMsg
+
+"""
+* 撤回消息
+* msgid 消息ID
+"""
+def _CQ_deleteMsg(authCode: int, msgid: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        msgid = ctypes.c_longlong(msgid)
+        result = CQDll.CQ_deleteMsg(authCode, msgid)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.deleteMsg = _CQ_deleteMsg
+
+"""
+* 发送赞 发送手机赞
+* QQID QQ号
+"""
+def _CQ_sendLike(authCode: int, QQID: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        QQID = ctypes.c_longlong(QQID)
+        result = CQDll.CQ_sendLike(authCode, QQID)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.sendLike = _CQ_sendLike
+
+"""
+* 置群员移除
+* groupid 目标群
+* QQID QQ号
+* rejectaddrequest 不再接收此人加群申请，请慎用
+"""
+def _CQ_setGroupKick(authCode: int, groupid: int, QQID: int, rejectaddrequest: bool) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        QQID = ctypes.c_longlong(QQID)
+        rejectaddrequest = ctypes.c_bool(rejectaddrequest)
+        result = CQDll.CQ_setGroupKick(authCode, groupid, QQID, rejectaddrequest)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupKick = _CQ_setGroupKick
+
+"""
+* 置群员禁言
+* groupid 目标群
+* QQID QQ号
+* duration 禁言的时间，单位为秒。如果要解禁，这里填写0。
+"""
+def _CQ_setGroupBan(authCode: int, groupid: int, QQID: int, duration: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        QQID = ctypes.c_longlong(QQID)
+        duration = ctypes.c_longlong(duration)
+        result = CQDll.CQ_setGroupBan(authCode, groupid, QQID, duration)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupBan = _CQ_setGroupBan
+
+"""
+* 置群管理员
+* groupid 目标群
+* QQID QQ号
+* setadmin true:设置管理员 false:取消管理员
+"""
+def _CQ_setGroupAdmin(authCode: int, groupid: int, QQID: int, setadmin: bool) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        QQID = ctypes.c_longlong(QQID)
+        setadmin = ctypes.c_bool(setadmin)
+        result = CQDll.CQ_setGroupAdmin(authCode, groupid, QQID, setadmin)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupAdmin = _CQ_setGroupAdmin
+
+"""
+* 置全群禁言
+* groupid 目标群
+* enableban true:开启 false:关闭
+"""
+def _CQ_setGroupWholeBan(authCode: int, groupid: int, enableban: bool) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        enableban = ctypes.c_bool(enableban)
+        result = CQDll.CQ_setGroupWholeBan(authCode, groupid, enableban)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupWholeBan = _CQ_setGroupWholeBan
+"""
+* 置匿名群员禁言
+* groupid 目标群
+* anomymous 群消息事件收到的 anomymous 参数
+* duration 禁言的时间，单位为秒。不支持解禁。
+"""
+def _CQ_setGroupAnonymousBan(authCode: int, groupid: int, anomymous: str, duration: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        anomymous = ctypes.c_char_p(bytes(anomymous, 'gbk'))
+        duration = ctypes.c_longlong(duration)
+        result = CQDll.CQ_setGroupAnonymousBan(authCode, groupid, anomymous, duration)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupAnonymousBan = _CQ_setGroupAnonymousBan
+
+"""
+* 置群匿名设置
+* groupid 目标群
+* enableanomymous true:开启 false:关闭
+"""
+def _CQ_setGroupAnonymous(authCode: int, groupid: int, enableanomymous: bool) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        enableanomymous = ctypes.c_bool(enableanomymous)
+        result = CQDll.CQ_setGroupAnonymous(authCode, groupid, enableanomymous)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupAnonymous = _CQ_setGroupAnonymous
+
+"""
+* 置群成员名片
+* groupid 目标群
+* QQID 目标QQ
+* newcard 新名片(昵称)
+"""
+def _CQ_setGroupCard(authCode: int, groupid: int, QQID: int, newcard: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        QQID = ctypes.c_longlong(QQID)
+        newcard = ctypes.c_char_p(bytes(newcard, 'gbk'))
+        result = CQDll.CQ_setGroupCard(authCode, groupid, QQID, newcard)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupCard = _CQ_setGroupCard
+
+"""
+* 置群退出 慎用, 此接口需要严格授权
+* groupid 目标群
+* isdismiss 是否解散 true:解散本群(群主) false:退出本群(管理、群成员)
+"""
+def _CQ_setGroupLeave(authCode: int, groupid: int, isdismiss: bool) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        isdismiss = ctypes.c_bool(isdismiss)
+        result = CQDll.CQ_setGroupLeave(authCode, groupid, isdismiss)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupLeave = _CQ_setGroupLeave
+
+"""
+* 置群成员专属头衔 需群主权限
+* groupid 目标群
+* QQID 目标QQ
+* newspecialtitle 头衔（如果要删除，这里填空）
+* duration 专属头衔有效期，单位为秒。如果永久有效，这里填写-1。
+"""
+def _CQ_setGroupSpecialTitle(authCode: int, groupid: int, QQID: int, newspecialtitle: str, duration: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        groupid = ctypes.c_longlong(groupid)
+        QQID = ctypes.c_longlong(QQID)
+        newspecialtitle = ctypes.c_char_p(bytes(newspecialtitle, 'gbk'))
+        duration = ctypes.c_longlong(duration)
+        result = CQDll.CQ_setGroupSpecialTitle(authCode, groupid, QQID, newspecialtitle, duration)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupSpecialTitle = _CQ_setGroupSpecialTitle
+
+"""
+* 置讨论组退出
+* discussid 目标讨论组号
+"""
+def _CQ_setDiscussLeave(authCode: int, discussid: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        discussid = ctypes.c_longlong(discussid)
+        result = CQDll.CQ_setDiscussLeave(authCode, discussid)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setDiscussLeave = _CQ_setDiscussLeave
+
+"""
+* 置好友添加请求
+* responseflag 请求事件收到的 responseflag 参数，加好友时对方发来的理由
+* responseoperation REQUEST_ALLOW 或 REQUEST_DENY
+* remark 添加后的好友备注
+"""
+def _CQ_setFriendAddRequest(authCode: int, responseflag: str, responseoperation: int, remark: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        responseflag = ctypes.c_char_p(bytes(responseflag, 'gbk'))
+        responseoperation = ctypes.c_int(responseoperation)
+        remark = ctypes.c_char_p(bytes(remark, 'gbk'))
+        result = CQDll.CQ_setFriendAddRequest(authCode, responseflag, responseoperation, remark)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setFriendAddRequest = _CQ_setFriendAddRequest
+
+"""
+* 置群添加请求
+* responseflag 请求事件收到的 responseflag 参数，加群时对方发来的加群理由
+* requesttype根据请求事件的子类型区分 REQUEST_GROUPADD 或 REQUEST_GROUPINVITE
+* responseoperation  REQUEST_ALLOW 或 REQUEST_DENY
+* reason 操作理由，仅 REQUEST_GROUPADD 且 REQUEST_DENY 时可用，拒绝加群时给对方回复的拒绝理由
+"""
+def _CQ_setGroupAddRequestV2(authCode: int, responseflag: str, requesttype: int, responseoperation: int, reason: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        responseflag = ctypes.c_char_p(bytes(responseflag, 'gbk'))
+        requesttype = ctypes.c_int(requesttype)
+        responseoperation = ctypes.c_int(responseoperation)
+        reason = ctypes.c_char_p(bytes(reason, 'gbk'))
+        result = CQDll.CQ_setGroupAddRequestV2(authCode, responseflag, requesttype, responseoperation, reason)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setGroupAddRequestV2 = _CQ_setGroupAddRequestV2
+
+"""
+* 取群成员信息
+* groupid 目标QQ所在群
+* QQID 目标QQ号
+* nocache 不使用缓存
+"""
+def _CQ_getGroupMemberInfoV2(authCode: int, gourpId: int, QQID, useCache=False) -> [dict]:
+    authCode = ctypes.c_int(authCode)
+    gourpId = ctypes.c_longlong(gourpId)
+    QQID = ctypes.c_longlong(QQID)
+    useCache = ctypes.c_bool(useCache)
+    result = CQDll.CQ_getGroupMemberInfoV2(authCode, gourpId, QQID, useCache)
+    source = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+    # 读取数据
+    resultList = []
+
+    data = base64.b64decode(source)
+    if len(data) < 4:
+        return []
+    
+    u = Unpack(data)
+    count = u.GetInt()
+    
+    for _ in range(count):
+        if u.Len() <= 0:
+            return resultList
+        # 读取列表数据
+        _data = Unpack(u.GetToken())
+        item = {
+            '群号': _data.GetLong (),
+            'QQID': _data.GetLong (),
+            '昵称': _data.GetLenStr (),
+            '名片': _data.GetLenStr (),
+            '性别':  _data.GetInt (),
+            '年龄':  _data.GetInt (),
+            '地区': _data.GetLenStr (),
+            '加群时间': _data.GetInt (),
+            '最后发言': _data.GetInt (),
+            '等级_名称': _data.GetLenStr (),
+            '管理权限':  _data.GetInt (),
+            '不良记录成员': _data.GetInt () == 1,
+            '专属头衔': _data.GetLenStr (),
+            '专属头衔过期时间': _data.GetInt (),
+            '允许修改名片': _data.GetInt () == 1
+        }
+        resultList.append(item)
+    return resultList
+CQP.getGroupMemberInfoV2 = _CQ_getGroupMemberInfoV2
+
+"""
+* 取陌生人信息
+* QQID 目标QQ
+* nocache 不使用缓存
+"""
+def _CQ_getStrangerInfo(authCode: int, QQID: int, useCache=False) -> dict:
+    authCode = ctypes.c_int(authCode)
+    QQID = ctypes.c_longlong(QQID)
+    result = CQDll.CQ_getStrangerInfo(authCode, QQID, useCache)
+    source = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+    
+    # 读取数据
+    resultList = []
+
+    data = base64.b64decode(source)
+    if len(data) < 4:
+        return []
+    
+    u = Unpack(data)
+
+    return {
+        'QQID': u.GetLong (),
+        '昵称': u.GetLenStr (),
+        '性别': u.GetInt (),
+        '年龄': u.GetInt ()
+    }
+CQP.getStrangerInfo = _CQ_getStrangerInfo
+
+"""
+* 日志
+* priority 优先级，CQLOG 开头的常量
+* category 类型    CQP.CQLOG_* 开头变量
+* content 内容
+"""
+def _CQ_addLog(authCode: int, priority: int, category: str, content: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        priority = ctypes.c_int(priority)
+        category = ctypes.c_char_p(bytes(category, 'gbk'))
+        content = ctypes.c_char_p(bytes(content, 'gbk'))
+        result = CQDll.CQ_addLog(authCode, priority, category, content)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.addLog = _CQ_addLog
+
+"""
+* 取Cookies 慎用, 此接口需要严格授权
+"""
+def _CQ_getCookies(authCode: int) -> str:
+    try:
+        authCode = ctypes.c_int(authCode)
+        result = CQDll.CQ_getCookies(authCode)
+        result = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+        return result
+    except:
+        return ''
+CQP.getCookies = _CQ_getCookies
+
+"""
+* 取CsrfToken 慎用, 此接口需要严格授权
+"""
+def _CQ_getCsrfToken(authCode: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        result = CQDll.CQ_getCsrfToken(authCode)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.getCsrfToken = _CQ_getCsrfToken
+
+"""
+* 取登录QQ
+"""
+def _CQ_getLoginQQ(authCode: int) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        result = CQDll.CQ_getLoginQQ(authCode)
+        result = result = ctypes.c_longlong(result).value
+        return result
+    except:
+        return -1
+CQP.getLoginQQ = _CQ_getLoginQQ
+
+"""
+* 取登录QQ昵称
+"""
+def _CQ_getLoginNick(authCode: int) -> str:
+    try:
+        authCode = ctypes.c_int(authCode)
+        result = CQDll.CQ_getLoginNick(authCode)
+        result = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+        return result
+    except:
+        return ''
+CQP.getLoginNick = _CQ_getLoginNick
+
+"""
+* 取应用目录，返回的路径末尾带"\"
+"""
+def _CQ_getAppDirectory(authCode: int) -> str:
+    try:
+        authCode = ctypes.c_int(authCode)
+        result = CQDll.CQ_getAppDirectory(authCode)
+        result = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+        return result
+    except:
+        return ''
+CQP.getAppDirectory = _CQ_getAppDirectory
+
+"""
+* 置致命错误提示
+* errorinfo 错误信息
+"""
+def _CQ_setFatal(authCode: int, errorinfo: str) -> int:
+    try:
+        authCode = ctypes.c_int(authCode)
+        errorinfo = ctypes.c_char_p(bytes(errorinfo, 'gbk'))
+        result = CQDll._CQ_setFatal(authCode, errorinfo)
+        result = result = ctypes.c_int32(result).value
+        return result
+    except:
+        return -1
+CQP.setFatal = _CQ_setFatal
+
+"""
+* 接收语音，接收消息中的语音(record),返回保存在 \data\record\ 目录下的文件名
+* file 收到消息中的语音文件名(file), 可用get_message_records(msg)[0] 获取第一个
+* outformat 应用所需的语音文件格式，目前支持 mp3 amr wma m4a spx ogg wav flac
+"""
 def _CQ_getRecord(authCode: int, file: str, format: str) -> str:
     authCode = ctypes.c_int(authCode)
     file = ctypes.c_char_p(bytes(file, 'gbk'))
     format = ctypes.c_char_p(bytes(format, 'gbk'))
     result = CQDll.CQ_getRecordV2(authCode, file, format)
     return ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+CQP.getRecord = _CQ_getRecord
 
+"""
+* 接收图片
+* file 收到消息中的图片文件名(file), get_message_images(msg)[0] 获取第一个
+"""
 def _CQ_getImage(authCode: int, file: str) -> str:
     authCode = ctypes.c_int(authCode)
     file = ctypes.c_char_p(bytes(file, 'gbk'))
     result = CQDll.CQ_getImage(authCode, file)
     return ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+CQP.getImage = _CQ_getImage
 
+"""
+* 接收语音，接收消息中的语音(record),返回保存在 \data\record\ 目录下的文件名
+* file 收到消息中的语音文件名(file), 可用get_message_records(msg)[0] 获取第一个
+* format 应用所需的语音文件格式，目前支持 mp3 amr wma m4a spx ogg wav flac
+"""
+def _CQ_getRecordV2(authCode: int, file: str, format: str) -> str:
+    authCode = ctypes.c_int(authCode)
+    file = ctypes.c_char_p(bytes(file, 'gbk'))
+    format = ctypes.c_char_p(bytes(format, 'gbk'))
+    result = CQDll.CQ_getRecordV2(authCode, file, format)
+    return ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
+CQP.getRecordV2 = _CQ_getRecordV2
+
+"""
+* 获取群成员列表
+* gourpId 群号
+"""
 def _CQ_getGroupMemberList(authCode: int, gourpId: int) -> [dict]:
     authCode = ctypes.c_int(authCode)
     gourpId = ctypes.c_longlong(gourpId)
@@ -295,11 +833,15 @@ def _CQ_getGroupMemberList(authCode: int, gourpId: int) -> [dict]:
         }
         resultList.append(item)
     return resultList
+CQP.getGroupMemberList = _CQ_getGroupMemberList
+
+"""
+* 获取群列表
+"""
 
 def _CQ_getGroupList(authCode: int) -> [dict]:
     authCode = ctypes.c_int(authCode)
     result = CQDll.CQ_getGroupList(authCode)
-    
     source = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
 
     # 读取数据
@@ -323,7 +865,11 @@ def _CQ_getGroupList(authCode: int) -> [dict]:
         }
         resultList.append(item)
     return resultList
+CQP.getGroupList = _CQ_getGroupList
 
+"""
+* 获取好友列表
+"""
 def _CQ_getFriendList(authCode: int) -> [dict]:
     authCode = ctypes.c_int(authCode)
     result = CQDll.CQ_getGroupList(authCode)
@@ -352,80 +898,26 @@ def _CQ_getFriendList(authCode: int) -> [dict]:
         }
         resultList.append(item)
     return resultList
+CQP.getFriendList = _CQ_getFriendList
 
+"""
+* 是否可发送语音
+"""
 def _CQ_canSendRecord(authCode: int) -> bool:
     return ctypes.c_int(CQDll.CQ_canSendRecord(authCode)).value > 0
+CQP.canSendRecord = _CQ_canSendRecord
 
+"""
+* 是否可发送图片
+"""
 def _CQ_canSendImage(authCode: int) -> bool:
     return ctypes.c_int(CQDll.CQ_canSendImage(authCode)).value > 0
+CQP.canSendImage = _CQ_canSendImage
 
-def _CQ_getGroupMemberInfoV2(authCode: int, gourpId: int, QQID, useCache=False) -> [dict]:
-    authCode = ctypes.c_int(authCode)
-    gourpId = ctypes.c_longlong(gourpId)
-    QQID = ctypes.c_longlong(QQID)
-    useCache = ctypes.c_bool(useCache)
-    result = CQDll.CQ_getGroupMemberInfoV2(authCode, gourpId, QQID, useCache)
-    
-    source = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
-    
-    # 读取数据
-    resultList = []
-
-    data = base64.b64decode(source)
-    if len(data) < 4:
-        return []
-    
-    u = Unpack(data)
-    count = u.GetInt()
-    
-    for _ in range(count):
-        if u.Len() <= 0:
-            return resultList
-        # 读取列表数据
-        _data = Unpack(u.GetToken())
-        item = {
-            '群号': _data.GetLong (),
-            'QQID': _data.GetLong (),
-            '昵称': _data.GetLenStr (),
-            '名片': _data.GetLenStr (),
-            '性别':  _data.GetInt (),
-            '年龄':  _data.GetInt (),
-            '地区': _data.GetLenStr (),
-            '加群时间': _data.GetInt (),
-            '最后发言': _data.GetInt (),
-            '等级_名称': _data.GetLenStr (),
-            '管理权限':  _data.GetInt (),
-            '不良记录成员': _data.GetInt () == 1,
-            '专属头衔': _data.GetLenStr (),
-            '专属头衔过期时间': _data.GetInt (),
-            '允许修改名片': _data.GetInt () == 1
-        }
-        resultList.append(item)
-    return resultList
-
-def _CQ_getStrangerInfo(authCode: int, QQID: int, useCache=False) -> dict:
-    authCode = ctypes.c_int(authCode)
-    QQID = ctypes.c_longlong(QQID)
-    result = CQDll.CQ_getStrangerInfo(authCode, QQID, useCache)
-    
-    source = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
-    
-    # 读取数据
-    resultList = []
-
-    data = base64.b64decode(source)
-    if len(data) < 4:
-        return []
-    
-    u = Unpack(data)
-
-    return {
-        'QQID': u.GetLong (),
-        '昵称': u.GetLenStr (),
-        '性别': u.GetInt (),
-        '年龄': u.GetInt ()
-    }
-
+"""
+* 取Cookies 慎用, 此接口需要严格授权
+* domain 域名，例如：qq.com
+"""
 def _CQ_getCookiesV2(authCode: int, domain: str) -> str:
     try:
         authCode = ctypes.c_int(authCode)
@@ -435,7 +927,13 @@ def _CQ_getCookiesV2(authCode: int, domain: str) -> str:
         return result
     except:
         return ''
-    
+CQP.getCookiesV2 = _CQ_getCookiesV2
+
+"""
+* 取群信息
+* gourpId  群号
+* useCache 是否使用缓存
+"""
 def _CQ_getGroupInfo(authCode: int, gourpId: int, useCache=False) -> [dict]:
     authCode = ctypes.c_int(authCode)
     gourpId = ctypes.c_longlong(gourpId)
@@ -467,287 +965,16 @@ def _CQ_getGroupInfo(authCode: int, gourpId: int, useCache=False) -> [dict]:
         }
         resultList.append(item)
     return resultList
+CQP.getGroupInfo = _CQ_getGroupInfo
 
+"""
+* 发送赞 发送手机赞
+* QQID QQ号
+"""
 def _CQ_sendLikeV2(authCode: int, QQID: int) -> int:
     authCode = ctypes.c_int(authCode)
     QQID = ctypes.c_longlong(QQID)
     result = CQDll.CQ_sendLikeV2(authCode, QQID)
-    result = ctypes.c_int32(result).valu
+    result = ctypes.c_int32(result).value
     return result
-
-def _CQ_getCookies(authCode: int) -> str:
-    try:
-        authCode = ctypes.c_int(authCode)
-        result = CQDll.CQ_getCookies(authCode)
-        result = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
-        return result
-    except:
-        return ''
-
-def _CQ_getLoginNick(authCode: int) -> str:
-    try:
-        authCode = ctypes.c_int(authCode)
-        result = CQDll.CQ_getLoginNick(authCode)
-        result = ctypes.c_char_p(result).value.decode('gbk', errors='ignore')
-        return result
-    except:
-        return ''
-
-# 认证码
-CQP.AC = -1
-# 事件回调启用禁止
-CQP.enable = False
-# 事件_忽略
-CQP.EVENT_IGNORE = 0
-# 事件_拦截
-CQP.EVENT_BLOCK = 1
-# 请求_通过
-CQP.REQUEST_ALLOW = 1
-# 请求_拒绝
-CQP.REQUEST_DENY = 2
-# 请求_群添加
-CQP.REQUEST_GROUPADD = 1
-# 请求_群邀请
-CQP.REQUEST_GROUPINVITE = 2
-# 调试 灰色
-CQP.CQLOG_DEBUG = 0
-# 信息 黑色
-CQP.CQLOG_INFO = 10
-# 信息(成功) 紫色
-CQP.CQLOG_INFOSUCCESS = 11
-# 信息(接收) 蓝色
-CQP.CQLOG_INFORECV = 12
-# 信息(发送) 绿色
-CQP.CQLOG_INFOSEND = 13
-# 警告 橙色
-CQP.CQLOG_WARNING = 20
-# 错误 红色
-CQP.CQLOG_ERROR = 30
-# 致命错误 深红
-CQP.CQLOG_FATAL = 40
-
-
-# ------ 以下为V9+函数  ------
-"""
-* 发送私聊消息, 成功返回消息ID
-* QQID 目标QQ号
-* msg 消息内容
-"""
-# CQP.sendPrivateMsg(authCode: int, QQID: int, msg: str) -> int
-"""
-* 发送群消息, 成功返回消息ID
-* groupid 群号
-* msg 消息内容
-"""
-# CQP.sendGroupMsg(authCode: int, groupid: int, msg: str) -> int
-"""
-* 发送讨论组消息, 成功返回消息ID
-* discussid 讨论组号
-* msg 消息内容
-"""
-# CQP.sendDiscussMsg(authCode: int, discussid: int, msg: str) -> int
-"""
-* 撤回消息
-* msgid 消息ID
-"""
-# CQP.deleteMsg(authCode: int, msgid: int) -> int
-"""
-* 发送赞 发送手机赞
-* QQID QQ号
-"""
-# CQP.sendLike(authCode: int, QQID: int) -> int
-"""
-* 置群员移除
-* groupid 目标群
-* QQID QQ号
-* rejectaddrequest 不再接收此人加群申请，请慎用
-"""
-# CQP.setGroupKick(authCode: int, groupid: int, QQID: int, rejectaddrequest: bool) -> int
-"""
-* 置群员禁言
-* groupid 目标群
-* QQID QQ号
-* duration 禁言的时间，单位为秒。如果要解禁，这里填写0。
-"""
-# CQP.setGroupBan(authCode: int, groupid: int, QQID: int, duration: int) -> int
-"""
-* 置群管理员
-* groupid 目标群
-* QQID QQ号
-* setadmin true:设置管理员 false:取消管理员
-"""
-# CQP.setGroupAdmin(authCode: int, groupid: int, QQID: int, setadmin: bool) -> int
-"""
-* 置全群禁言
-* groupid 目标群
-* enableban true:开启 false:关闭
-"""
-# CQP.setGroupWholeBan(authCode: int, groupid: int, enableban: bool) -> int
-"""
-* 置匿名群员禁言
-* groupid 目标群
-* anomymous 群消息事件收到的 anomymous 参数
-* duration 禁言的时间，单位为秒。不支持解禁。
-"""
-# CQP.setGroupAnonymousBan(authCode: int, groupid: int, anomymous: str, duration: int) -> int
-"""
-* 置群匿名设置
-* groupid 目标群
-* enableanomymous true:开启 false:关闭
-"""
-# CQP.setGroupAnonymous(authCode: int, groupid: int, enableanomymous: bool) -> int
-"""
-* 置群成员名片
-* groupid 目标群
-* QQID 目标QQ
-* newcard 新名片(昵称)
-"""
-# CQP.setGroupCard(authCode: int, groupid: int, QQID: int, newcard: str) -> int
-"""
-* 置群退出 慎用, 此接口需要严格授权
-* groupid 目标群
-* isdismiss 是否解散 true:解散本群(群主) false:退出本群(管理、群成员)
-"""
-# CQP.setGroupLeave(authCode: int, groupid: int, isdismiss: bool) -> int
-"""
-* 置群成员专属头衔 需群主权限
-* groupid 目标群
-* QQID 目标QQ
-* newspecialtitle 头衔（如果要删除，这里填空）
-* duration 专属头衔有效期，单位为秒。如果永久有效，这里填写-1。
-"""
-# CQP.setGroupSpecialTitle(authCode: int, groupid: int, QQID: int, newspecialtitle: str, duration: int) -> int
-"""
-* 置讨论组退出
-* discussid 目标讨论组号
-"""
-# CQP.setDiscussLeave(authCode: int, discussid: int) -> int
-"""
-* 置好友添加请求
-* responseflag 请求事件收到的 responseflag 参数，加好友时对方发来的理由
-* responseoperation REQUEST_ALLOW 或 REQUEST_DENY
-* remark 添加后的好友备注
-"""
-# CQP.setFriendAddRequest(authCode: int, responseflag: str, responseoperation: int, remark: str) -> int
-"""
-* 置群添加请求
-* responseflag 请求事件收到的 responseflag 参数，加群时对方发来的加群理由
-* requesttype根据请求事件的子类型区分 REQUEST_GROUPADD 或 REQUEST_GROUPINVITE
-* responseoperation  REQUEST_ALLOW 或 REQUEST_DENY
-* reason 操作理由，仅 REQUEST_GROUPADD 且 REQUEST_DENY 时可用，拒绝加群时给对方回复的拒绝理由
-"""
-# CQP.setGroupAddRequestV2(authCode: int, responseflag: str, requesttype: int, responseoperation: int, reason: str) -> int
-"""
-* 取群成员信息
-* groupid 目标QQ所在群
-* QQID 目标QQ号
-* nocache 不使用缓存
-"""
-# _CQ_getGroupMemberInfoV2(authCode: int, gourpId: int, QQID, useCache=False) -> [dict]
-CQP.getGroupMemberInfoV2 = _CQ_getGroupMemberInfoV2
-"""
-* 取陌生人信息
-* QQID 目标QQ
-* nocache 不使用缓存
-"""
-# _CQ_getStrangerInfo(authCode: int, QQID: int, useCache=False) -> dict
-CQP.getStrangerInfo = _CQ_getStrangerInfo
-"""
-* 日志
-* priority 优先级，CQLOG 开头的常量
-* category 类型    CQP.CQLOG_* 开头变量
-* content 内容
-"""
-# CQP.addLog(authCode: int, priority: int, category: str, content: str) -> int
-"""
-* 取Cookies 慎用, 此接口需要严格授权
-"""
-# _CQ_getCookies(authCode: int) -> str
-CQP.getCookies = _CQ_getCookies
-"""
-* 取CsrfToken 慎用, 此接口需要严格授权
-"""
-# CQP.getCsrfToken(authCode: int) -> int
-"""
-* 取登录QQ
-"""
-# CQP.getLoginQQ(authCode: int) -> int
-"""
-* 取登录QQ昵称
-"""
-# _CQ_getLoginNick(authCode: int) -> str
-CQP.getLoginNick = _CQ_getLoginNick
-"""
-* 取应用目录，返回的路径末尾带"\"
-"""
-# CQP.getAppDirectory(authCode: int) -> str
-"""
-* 置致命错误提示
-* errorinfo 错误信息
-"""
-# CQP.setFatal(authCode: int, errorinfo: str) -> int
-"""
-* 接收语音，接收消息中的语音(record),返回保存在 \data\record\ 目录下的文件名
-* file 收到消息中的语音文件名(file), 可用get_message_records(msg)[0] 获取第一个
-* outformat 应用所需的语音文件格式，目前支持 mp3 amr wma m4a spx ogg wav flac
-"""
-# CQP.getRecord(authCode: int, file: str, outformat) -> str
-CQP.getRecord = _CQ_getRecord
-"""
-* 接收图片
-* file 收到消息中的图片文件名(file), get_message_images(msg)[0] 获取第一个
-"""
-# _CQ_getImage(authCode: int, file: str) -> str
-CQP.getImage = _CQ_getImage
-"""
-* 接收语音，接收消息中的语音(record),返回保存在 \data\record\ 目录下的文件名
-* file 收到消息中的语音文件名(file), 可用get_message_records(msg)[0] 获取第一个
-* format 应用所需的语音文件格式，目前支持 mp3 amr wma m4a spx ogg wav flac
-"""
-# _CQ_getRecordV2(authCode: int, file: str, format: str) -> str
-CQP.getRecordV2 = _CQ_getRecordV2
-"""
-* 获取群成员列表
-* gourpId 群号
-"""
-# _CQ_getGroupMemberList(authCode: int, gourpId: int) -> [dict]
-CQP.getGroupMemberList = _CQ_getGroupMemberList
-"""
-* 获取群列表
-"""
-# _CQ_getGroupList(authCode: int) -> [dict]
-CQP.getGroupList = _CQ_getGroupList
-"""
-* 获取好友列表
-"""
-# _CQ_getFriendList(authCode: int) -> [dict]
-CQP.getFriendList = _CQ_getFriendList
-"""
-* 是否可发送语音
-"""
-# _CQ_canSendRecord(authCode: int) -> bool
-CQP.canSendRecord = _CQ_canSendRecord
-"""
-* 是否可发送图片
-"""
-# _CQ_canSendImage(authCode: int) -> bool
-CQP.canSendImage = _CQ_canSendImage
-"""
-* 取Cookies 慎用, 此接口需要严格授权
-* domain 域名，例如：qq.com
-"""
-# _CQ_getCookiesV2(authCode: int, domain: str) -> str
-CQP.getCookiesV2 = _CQ_getCookiesV2
-"""
-* 取群信息
-* gourpId  群号
-* useCache 是否使用缓存
-"""
-# _CQ_getGroupInfo(authCode: int, gourpId: int, useCache=False) -> [dict]
-CQP.getGroupInfo = _CQ_getGroupInfo
-"""
-* 发送赞 发送手机赞
-* QQID QQ号
-"""
-# _CQ_sendLikeV2(authCode: int, QQID: int) -> int
 CQP.sendLikeV2 = _CQ_sendLikeV2

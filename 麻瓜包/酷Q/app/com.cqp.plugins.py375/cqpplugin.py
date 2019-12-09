@@ -21,7 +21,8 @@ def dispatch(fn_name, *arg, **kwargs):
                 if fn(*arg, **kwargs) == CQP.EVENT_BLOCK:
                     return CQP.EVENT_BLOCK
             except:
-                CQP.addLog(CQP.AC, CQP.CQLOG_FATAL, 'CQP PY插件(异常)', str(traceback.format_exc()))
+                if CQP.AC != -1:
+                    CQP.addLog(CQP.AC, CQP.CQLOG_FATAL, 'CQP PY插件(异常)', str(traceback.format_exc()))
     return CQP.EVENT_IGNORE
 
 
