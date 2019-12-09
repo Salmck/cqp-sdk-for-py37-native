@@ -26,6 +26,11 @@
 
 我也不知道为什么,明明调用的是插件目录的python, 但是这个位置不安装python的话，就会加载失败
 
+# 代码编写方法
+1. 请不要改写cqpplugin.py的代码
+2. 请复制template.py到plugins目录, 并改名为xxx.py, 
+3. 然后在__init__.py 添加from . import xxx 即可
+4. xxx就是xxx.py的文件名
 
 
 # pip说明
