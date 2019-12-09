@@ -653,9 +653,9 @@ def _CQ_getStrangerInfo(authCode: int, QQID: int, useCache=False) -> dict:
 CQP.getStrangerInfo = _CQ_getStrangerInfo
 
 """
-* 日志
-* priority 优先级，CQLOG 开头的常量
-* category 类型    CQP.CQLOG_* 开头变量
+* 添加日志
+* priority 优先级，CQP.CQLOG_* 开头的常量
+* category 类型    日志标题
 * content 内容
 """
 def _CQ_addLog(authCode: int, priority: int, category: str, content: str) -> int:
